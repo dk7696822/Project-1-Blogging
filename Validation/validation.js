@@ -8,7 +8,7 @@ const isValidEmail = (email) => {
 };
 
 const isValidPass = (password) => {
-    const regex = /^(?=.?[A-Z])(?=.?[a-z])(?=.?[0-9])(?=.?[#?!@$%^&*-]).{8,15}$/.test(password)
+    const regex = /^[a-zA-Z]\w{3,14}$/.test(password)
     return regex
 };
 
