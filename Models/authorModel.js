@@ -1,28 +1,36 @@
 const mongoose = require("mongoose");
-
-const authorSchema = new mongoose.Schema({
-    FirstName: {
-        type: String,
-        required: true,
+const validator = require("validator");
+const authorSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, "Please provide your First Name"],
     },
-    LastName: {
-        type: String,
-        required: true
+    lastName: {
+      type: String,
+      required: [true, "Please provide your Last Name"],
     },
-  title: {
-    type: String,
-    required: true,
-    enum: ["Mr", "Mrs", "Miss"]
+    title: {
+      type: String,
+      required: [true, "Please provide the title"],
+      enum: {
+        values: ["Mr", "Mrs", "Miss"],
+        message: "Title can be Mr, Mrs, or Miss",
+      },
+    },
+    email: {
+      type: String,
+      required: [true, "Please provide your Email-ID"],
+      unique: true,
+      validation: [validator.isEmail, "Not a valid Email-ID"],
+    },
+    Password: {
+      type: String,
+      required: [true, "Please provide a password"],
+      minlength: [8, "Password should be greater than 8 characters"],
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  Password: {
-    type: String,
-    required: true,
-  }
-}, {timestamps: true});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("authors", authorSchema);
