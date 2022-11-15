@@ -77,4 +77,17 @@ const deleteBlog = async (req,res) => {
     } catch (err) {return res.status(500).send({status: false, msg: err.message})}
 }
 
-module.exports =  {createBlog,getBlog,updateBlog,deleteBlog}
+const dletedQueryParams = async function(req,res) {
+    try {
+        let data = req.body;
+        const deleteByQuery = await blogModel.updateMany({$and: [data, {author_id: req.id}, {isDeleted: false}]}, {$set: {isDeleted: true, deletedAt: new Date()}}, {new: true, upsert: true})
+        let count = deleteByQuery.modifiedCount
+        if(deleteByQuery.modifiedCount==0) {
+            return res.status(404).send({status: false, msg: "No Blog Found"})
+        }
+        res.status(200).send({status: true, msg: "No of blogs deleted", count})
+    }
+    catch (err) {res.status(500).send({status: false, msg: err.message})}
+};
+
+module.exports =  {createBlog,getBlog,updateBlog,deleteBlog,dletedQueryParams}
