@@ -18,6 +18,10 @@ const BlogSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    author_id: {
+        type: ObjectId, 
+        ref: "authors"
+    },
     SubCategory: {
         type: [String],
         required: true

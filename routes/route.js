@@ -1,8 +1,11 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
+const { createAuthor } = require('../Controller/authorController');
+const { createBlog } = require('../Controller/Blogcontroller');
+const { getBlog } = require('../Controller/Blogcontroller');
 
-router.get("/blog", (req, res) => {
-  res.send("My first project");
-});
+router.post('/authors', createAuthor);
+router.post('/blogs', createBlog);
+router.get('/getBlogs', getBlog);
 
 module.exports = router;
