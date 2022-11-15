@@ -3,7 +3,7 @@
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const isValidEmail = (email) => {
-    const regex = /^([a-zA-Z0-9_.]+@[a-z]+\.[a-z]{2,3})?$/.test(email)
+    const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email)
     return regex
 };
 
