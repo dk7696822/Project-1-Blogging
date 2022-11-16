@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { createAuthor } = require('../Controller/authorController');
-const { createBlog } = require('../Controller/Blogcontroller');
-const { getBlog } = require('../Controller/Blogcontroller');
-const { dletedQueryParams } = require("../Controller/Blogcontroller")
+const AuthorController = require('../Controller/authorController')
+// const { dletedQueryParams } = require("../Controller/Blogcontroller")
 const Blogcontroller = require("../Controller/Blogcontroller")
+const Authenticate = require('../middleware/Auth')
 
-
-router.post('/authors', createAuthor);
-router.post('/blogs', createBlog);
-router.get('/getBlogs', getBlog);
+router.post('/authors', AuthorController.createAuthor);
+router.post('/blogs', Blogcontroller.createBlog);
+router.get('/getBlogs', Blogcontroller.getBlog);
 router.put('/blogs/:blogId', Blogcontroller.updateBlog);
 router.delete('/blogs/:blogId', Blogcontroller.deleteBlog);
-router.delete("/blogger", dletedQueryParams)
+router.post('/login',  AuthorController.loginAuthor)
+router.get('/listOfAuthors', Authenticate.authentication,  AuthorController.getAllAuthors)
+router.get('/profile/:id', Authenticate.authentication, AuthorController.author)
+// router.delete("/blogger", dletedQueryParams)
 
 module.exports = router;

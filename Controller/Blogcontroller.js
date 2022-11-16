@@ -1,7 +1,7 @@
 const BlogModel = require("../Models/blogModel");
 const AuthorModel = require("../Models/authorModel");
 
-const createBlog = async (req, res) => {
+exports.createBlog = async (req, res) => {
   try {
     const checkAuthor = await AuthorModel.findById(req.body.authorId);
     if (!req.body.authorId) {
@@ -23,7 +23,7 @@ const createBlog = async (req, res) => {
   }
 };
 
-const getBlog = async (req, res) => {
+exports.getBlog = async (req, res) => {
   try {
     const data = req.query;
     const { author_id, Category, tags, SubCategory } = data;
@@ -40,7 +40,7 @@ const getBlog = async (req, res) => {
   }
 };
 
-const updateBlog = async (req, res) => {
+exports.updateBlog = async (req, res) => {
   try {
     let data = req.body;
     let blogId = req.params.blogId;
@@ -67,7 +67,7 @@ const updateBlog = async (req, res) => {
   }
 };
 
-const deleteBlog = async (req, res) => {
+exports.deleteBlog = async (req, res) => {
   try {
     let blogId = req.params.blogId;
     let checkblogId = await blogModel.findById(blogId);
@@ -86,8 +86,7 @@ const deleteBlog = async (req, res) => {
   }
 };
 
-module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
 
-module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
 
-module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
+// module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
+
