@@ -27,13 +27,20 @@ exports.getBlog = async (req, res) => {
   try {
     const data = req.query;
     const { author_id, Category, tags, SubCategory } = data;
-    const saveData = await blogModel.find({
-      $and: [{ isDeleted: false, isPublished: true }, data],
+    const saveData = await BlogModel.findOne({
+      isDeleted: false,
+      isPublished: true,
+      data,
+      author_id: req.params.id,
     });
     if (!saveData) {
       return res.status(404).send({ status: false, data: "Blog not found." });
     }
-    return res.status(200).send({ status: true, message: saveData });
+    if (req.authorId == saveData.author_id) {
+      return res.status(200).send({ status: true, message: saveData });
+    } else {
+      res.send("You are not authorised");
+    }
   } catch (err) {
     console.log(err);
     return res.status(500).send({ status: false, error: err.message });
@@ -44,6 +51,7 @@ exports.updateBlog = async (req, res) => {
   try {
     let data = req.body;
     let blogId = req.params.blogId;
+
     if (Object.keys(data).length === 0)
       return res
         .status(400)
@@ -53,15 +61,17 @@ exports.updateBlog = async (req, res) => {
         .status(400)
         .send({ status: false, message: "blog Id is required." });
     let findBlogId = await blogModel.findById(blogId);
-    if (findBlogId.isDeleted == true) {
-      return res.status(400).send({ status: true, error: "Deleted Blog" });
+    if (req.authorId === findBlogId.author_id) {
+      if (findBlogId.isDeleted == true) {
+        return res.status(400).send({ status: true, error: "Deleted Blog" });
+      }
+      let update = await blogModel.findOneAndUpdate(
+        { _id: blogId },
+        { $set: req.body },
+        { new: true }
+      );
+      return res.status(200).send({ status: true, msg: update });
     }
-    let update = await blogModel.findOneAndUpdate(
-      { _id: blogId },
-      { $set: req.body },
-      { new: true }
-    );
-    return res.status(200).send({ status: true, msg: update });
   } catch (err) {
     res.status(500).send({ status: false, msg: err.message });
   }
@@ -76,17 +86,18 @@ exports.deleteBlog = async (req, res) => {
         .status(404)
         .send({ status: false, msg: "Blog is not available" });
     }
-    let deleteBlog = await blogModel.findOneAndUpdate(
-      { _id: blogId },
-      { $set: { isDeleted: true } }
-    );
-    return res.status(200).send("");
+    if (req.authorId === checkblogId.author_id) {
+      let deleteBlog = await blogModel.findOneAndUpdate(
+        { _id: blogId },
+        { $set: { isDeleted: true } }
+      );
+      return res.status(200).send("");
+    } else {
+      res.send("You are not authorised");
+    }
   } catch (err) {
     return res.status(500).send({ status: false, msg: err.message });
   }
 };
 
-
-
 // module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
-
