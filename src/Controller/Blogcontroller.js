@@ -28,9 +28,44 @@ exports.createBlog = async (req, res) => {
   }
 };
 
+// exports.getBlog = async (req, res) => {
+//   try {
+//     const { authorId, category, tags, subCategory } = req.query;
+//     if (Object.keys(req.query).length === 0) {
+//       const listOfBlogs = await BlogModel.find({
+//         $and: [{ isDeleted: false }, { isPublished: true }],
+//       });
+//       if (!listOfBlogs) {
+//         return res.status(404).send("No such blog exist");
+//       }
+//       return res.status(200).send(listOfBlogs);
+//     } else {
+//       if (authorId || category || subCategory || tags) {
+//         const blogs = await BlogModel.find({
+//           $and: [
+//             {
+//               $and: [
+//                 { author_id: authorId },
+//                 { category },
+//                 { subCategory },
+//                 { tags },
+//               ],
+//             },
+//             { isDeleted: false },
+//             { isPublished: true },
+//           ],
+//         });
+//         return res.status(200).send(blogs);
+//       }
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).send({ status: false, error: err.message });
+//   }
+// };
+
 exports.getBlog = async (req, res) => {
   try {
-    const { authorId, category, tags, subCategory } = req.query;
     if (Object.keys(req.query).length === 0) {
       const listOfBlogs = await BlogModel.find({
         $and: [{ isDeleted: false }, { isPublished: true }],
@@ -40,23 +75,16 @@ exports.getBlog = async (req, res) => {
       }
       return res.status(200).send(listOfBlogs);
     } else {
-      if (authorId || category || subCategory || tags) {
-        const blogs = await BlogModel.find({
-          $and: [
-            {
-              $or: [
-                { author_id: authorId },
-                { category },
-                { subCategory },
-                { tags },
-              ],
-            },
-            { isDeleted: false },
-            { isPublished: true },
-          ],
-        });
-        return res.status(200).send(blogs);
-      }
+      const blogs = await BlogModel.find({
+        $and: [
+          req.query,
+          {
+            isDeleted: false,
+            isPublished: true,
+          },
+        ],
+      });
+      return res.status(200).send(blogs);
     }
   } catch (err) {
     console.log(err);

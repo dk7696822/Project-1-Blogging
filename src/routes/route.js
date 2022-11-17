@@ -7,7 +7,7 @@ const Authenticate = require("../middleware/Auth");
 router.post("/authors", AuthorController.createAuthor);
 
 router.post("/blogs", Authenticate.authentication, Blogcontroller.createBlog);
-router.get("/blogs", Authenticate.authorisation, Blogcontroller.getBlog);
+router.get("/blogs", Authenticate.authentication, Blogcontroller.getBlog);
 router.put(
   "/blogs/:blogId",
   Authenticate.authentication,
