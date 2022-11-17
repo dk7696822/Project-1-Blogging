@@ -19,6 +19,8 @@ exports.createBlog = async (req, res) => {
         status: true,
         data: blog,
       });
+    } else {
+      return res.status(400).send("You are not authorised to create a blog");
     }
   } catch (err) {
     console.log(err);
@@ -28,34 +30,32 @@ exports.createBlog = async (req, res) => {
 
 exports.getBlog = async (req, res) => {
   try {
-    if (req.authorId == req.body.author_id) {
-      const { authorId, category, tags, subCategory } = req.query;
-      if (Object.keys(req.query).length === 0) {
-        const listOfBlogs = await BlogModel.find({
-          $and: [{ isDeleted: false }, { isPublished: true }],
+    const { authorId, category, tags, subCategory } = req.query;
+    if (Object.keys(req.query).length === 0) {
+      const listOfBlogs = await BlogModel.find({
+        $and: [{ isDeleted: false }, { isPublished: true }],
+      });
+      if (!listOfBlogs) {
+        return res.status(404).send("No such blog exist");
+      }
+      return res.status(200).send(listOfBlogs);
+    } else {
+      if (authorId || category || subCategory || tags) {
+        const blogs = await BlogModel.find({
+          $and: [
+            {
+              $or: [
+                { author_id: authorId },
+                { category },
+                { subCategory },
+                { tags },
+              ],
+            },
+            { isDeleted: false },
+            { isPublished: true },
+          ],
         });
-        if (!listOfBlogs) {
-          return res.status(404).send("No such blog exist");
-        }
-        return res.status(200).send(listOfBlogs);
-      } else {
-        if (authorId || category || subCategory || tags) {
-          const blogs = await BlogModel.find({
-            $and: [
-              {
-                $or: [
-                  { author_id: authorId },
-                  { category },
-                  { subCategory },
-                  { tags },
-                ],
-              },
-              { isDeleted: false },
-              { isPublished: true },
-            ],
-          });
-          return res.status(200).send(blogs);
-        }
+        return res.status(200).send(blogs);
       }
     }
   } catch (err) {

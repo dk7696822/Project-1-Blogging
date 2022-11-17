@@ -1,37 +1,17 @@
 const jwt = require("jsonwebtoken");
-const AuthorModel = require("../Models/authorModel");
 const BlogModel = require("../Models/blogModel");
-
-// exports.loginAuthor = async (req, res, next) => {
-//   try {
-//     const findAuthor = await AuthorModel.findOne({
-//       email: req.body.email,
-//       password: req.body.password,
-//     });
-//     if (!findAuthor) {
-//       return res.status(400).send("Émail or Password is incorrect");
-//     }
-//     const token = jwt.sign({ authorId: findAuthor._id }, "my-cool-password");
-//     req.headers["x-api-key"] = token;
-//     next();
-//   } catch (err) {
-//     return res.send(err.message);
-//   }
-// };
 
 exports.authentication = async function (req, res, next) {
   try {
     // check token
     let token = req.headers["x-api-key"];
-    // if(!token) req.headers["x-api-key"];
     if (!token)
       return res
         .status(401)
         .send({ status: false, msg: "You are not logged in" });
 
     // verify token
-    let decodedToken = jwt.verify(token, "my-cool-password");
-    console.log(decodedToken);
+    let decodedToken = jwt.verify(token, process.env.SECRET_KEY);
     if (!decodedToken)
       return res
         .status(403)
@@ -50,7 +30,9 @@ exports.authorisation = async (req, res, next) => {
       _id: req.params.blogId,
       isDeleted: false,
     });
-    console.log(req.authorId, blog.author_id);
+    if (!blog) {
+      return res.status(400).send("No such blog found");
+    }
     if (req.authorId != blog.author_id) {
       return res.status(400).send("You are not authorized");
     }

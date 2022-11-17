@@ -12,15 +12,18 @@ exports.createAuthor = async (req, res) => {
 exports.loginAuthor = async (req, res) => {
   try {
     const findAuthor = await AuthorModel.findOne({
-      email: req.body.email,
+      email: req.body.email.toLowerCase(),
       password: req.body.password,
     });
     if (!findAuthor) {
-      res.status(400).send("Émail or Password is incorrect");
+      return res.status(400).send("Émail or Password is incorrect");
     }
-    const token = jwt.sign({ authorId: findAuthor._id }, "my-cool-password");
-    res.status(200).send(token);
+    const token = jwt.sign(
+      { authorId: findAuthor._id },
+      process.env.SECRET_KEY
+    );
+    return res.status(200).send(token);
   } catch (err) {
-    res.status(400).send(err.message);
+    return res.status(400).send(err.message);
   }
 };
