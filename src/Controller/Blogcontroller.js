@@ -28,42 +28,6 @@ exports.createBlog = async (req, res) => {
   }
 };
 
-// exports.getBlog = async (req, res) => {
-//   try {
-//     const { authorId, category, tags, subCategory } = req.query;
-//     if (Object.keys(req.query).length === 0) {
-//       const listOfBlogs = await BlogModel.find({
-//         $and: [{ isDeleted: false }, { isPublished: true }],
-//       });
-//       if (!listOfBlogs) {
-//         return res.status(404).send("No such blog exist");
-//       }
-//       return res.status(200).send(listOfBlogs);
-//     } else {
-//       if (authorId || category || subCategory || tags) {
-//         const blogs = await BlogModel.find({
-//           $and: [
-//             {
-//               $and: [
-//                 { author_id: authorId },
-//                 { category },
-//                 { subCategory },
-//                 { tags },
-//               ],
-//             },
-//             { isDeleted: false },
-//             { isPublished: true },
-//           ],
-//         });
-//         return res.status(200).send(blogs);
-//       }
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).send({ status: false, error: err.message });
-//   }
-// };
-
 exports.getBlog = async (req, res) => {
   try {
     if (Object.keys(req.query).length === 0) {
@@ -126,7 +90,8 @@ exports.updateBlog = async (req, res) => {
           },
           $push: { tags, subCategory },
         },
-        { new: true }
+        { new: true },
+        { runValidators: true }
       );
       return res.status(200).send(updatedBlog);
     } else {
@@ -138,6 +103,7 @@ exports.updateBlog = async (req, res) => {
             category,
             title,
             body,
+            isPublished,
             updatedAt: Date.now(),
           },
           $push: { tags, subCategory },
@@ -211,4 +177,3 @@ exports.deleteBlogByQuery = async (req, res) => {
     return res.status(500).send(err.message);
   }
 };
-// module.exports = { createBlog, getBlog, updateBlog, deleteBlog };
