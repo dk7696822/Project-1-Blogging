@@ -8,19 +8,19 @@ exports.authentication = async function (req, res, next) {
     if (!token)
       return res
         .status(401)
-        .send({ status: false, msg: "You are not logged in" });
+        .json({ status: false, msg: "You are not logged in" });
 
     // verify token
     let decodedToken = jwt.verify(token, process.env.SECRET_KEY);
     if (!decodedToken)
       return res
         .status(403)
-        .send({ status: false, msg: "You are not authorised" });
+        .json({ status: false, msg: "You are not authorised" });
     req.authorId = decodedToken.authorId;
 
     next();
   } catch (err) {
-    res.status(500).send({ status: false, msg: err.message });
+    res.status(500).json({ status: false, msg: err.message });
   }
 };
 
@@ -31,13 +31,15 @@ exports.authorisation = async (req, res, next) => {
       isDeleted: false,
     });
     if (!blog) {
-      return res.status(400).send("No such blog found");
+      return res.status(404).json({ status: false, msg: "No such blog found" });
     }
     if (req.authorId != blog.author_id) {
-      return res.status(400).send("You are not authorized");
+      return res
+        .status(403)
+        .json({ status: false, msg: "You are not authorized" });
     }
     next();
   } catch (err) {
-    return res.status(400).send(err.message);
+    return res.status(500).json({ status: false, msg: err.message });
   }
 };

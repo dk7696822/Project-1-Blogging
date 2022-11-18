@@ -6,13 +6,15 @@ exports.createBlog = async (req, res) => {
   try {
     if (req.authorId == req.body.author_id) {
       if (!isValidObjectId(req.body.author_id)) {
-        return res.send("Author ID is not Valid");
+        return res
+          .status(400)
+          .json({ status: false, message: "Author ID is not Valid" });
       }
       const checkAuthor = await AuthorModel.findById(req.body.author_id);
       if (!checkAuthor) {
         return res
-          .status(400)
-          .json({ status: true, msg: "Author ID is invalid" });
+          .status(404)
+          .json({ status: false, msg: "No author exist with this ID" });
       }
       const blog = await BlogModel.create(req.body);
       return res.status(201).json({
@@ -20,10 +22,12 @@ exports.createBlog = async (req, res) => {
         data: blog,
       });
     } else {
-      return res.status(400).send("You are not authorised to create a blog");
+      return res.status(403).json({
+        status: false,
+        msg: "You are not authorised to create a blog with this author ID",
+      });
     }
   } catch (err) {
-    console.log(err);
     return res.status(400).send({ status: false, error: err.message });
   }
 };
@@ -35,9 +39,11 @@ exports.getBlog = async (req, res) => {
         $and: [{ isDeleted: false }, { isPublished: true }],
       });
       if (!listOfBlogs) {
-        return res.status(404).send("No such blog exist");
+        return res
+          .status(404)
+          .json({ status: false, msg: "No such blog exist" });
       }
-      return res.status(200).send(listOfBlogs);
+      return res.status(200).json({ status: true, data: listOfBlogs });
     } else {
       const blogs = await BlogModel.find({
         $and: [
@@ -48,11 +54,15 @@ exports.getBlog = async (req, res) => {
           },
         ],
       });
-      return res.status(200).send(blogs);
+      if (!blogs) {
+        return res
+          .status(404)
+          .json({ status: false, msg: "No such blog exist" });
+      }
+      return res.status(200).json({ status: true, data: blogs });
     }
   } catch (err) {
-    console.log(err);
-    return res.status(500).send({ status: false, error: err.message });
+    return res.status(500).json({ status: false, error: err.message });
   }
 };
 
@@ -60,7 +70,7 @@ exports.updateBlog = async (req, res) => {
   try {
     const { category, title, body, tags, subCategory, isPublished } = req.body;
     if (!isValidObjectId(req.params.blogId)) {
-      return res.status(400).send("Invalid ID");
+      return res.status(400).json({ status: false, msg: "Invalid ID" });
     }
     const blog = await BlogModel.findOne({
       _id: req.params.blogId,
@@ -68,11 +78,18 @@ exports.updateBlog = async (req, res) => {
     });
 
     if (!blog) {
-      return res.status(400).send("Blog either does not exist or is deleted");
+      return res
+        .status(404)
+        .json({
+          status: false,
+          msg: "Blog either does not exist or is deleted",
+        });
     }
     if (tags && subCategory) {
       if (tags.length == 0 || subCategory.length == 0) {
-        return res.status(400).send("Please do not leave the field empty");
+        return res
+          .status(400)
+          .json({ status: false, msg: "Please do not leave the field empty" });
       }
     }
     if (isPublished == true) {
@@ -90,10 +107,17 @@ exports.updateBlog = async (req, res) => {
           },
           $push: { tags, subCategory },
         },
-        { new: true },
-        { runValidators: true }
+        { new: true }
       );
-      return res.status(200).send(updatedBlog);
+      if (!updatedBlog) {
+        return res
+          .status(404)
+          .json({
+            status: false,
+            msg: "Either the blog does not exist with this ID or is deleted",
+          });
+      }
+      return res.status(200).json({ status: true, data: updatedBlog });
     } else {
       const updatedBlog = await BlogModel.findOneAndUpdate(
         { isDeleted: false, _id: req.params.blogId },
@@ -110,17 +134,27 @@ exports.updateBlog = async (req, res) => {
         },
         { new: true }
       );
-      return res.status(200).send(updatedBlog);
+      if (!updatedBlog) {
+        return res
+          .status(404)
+          .json({
+            status: false,
+            msg: "Either the blog does not exist with this ID or is deleted",
+          });
+      }
+      return res.status(200).json({ status: true, data: updatedBlog });
     }
   } catch (err) {
-    res.status(500).send({ status: false, msg: err.message });
+    res.status(500).json({ status: false, msg: err.message });
   }
 };
 
 exports.deleteBlog = async (req, res) => {
   try {
     if (!isValidObjectId(req.params.blogId)) {
-      return res.status(400).send("Invalid ID");
+      return res
+        .status(400)
+        .json({ status: false, msg: "Invalid ID provided" });
     }
 
     const deleteBlog = await BlogModel.findOneAndUpdate(
@@ -136,18 +170,25 @@ exports.deleteBlog = async (req, res) => {
       }
     );
     if (!deleteBlog) {
-      return res.status(400).send("Blog either does not exist or is deleted");
+      return res
+        .status(404)
+        .json({
+          status: false,
+          msg: "Blog either does not exist or is deleted",
+        });
     }
-    return res.status(204).send(deleteBlog);
+    return res.status(204).json({ status: true, data: deleteBlog });
   } catch (err) {
-    return res.status(500).send({ status: false, msg: err.message });
+    return res.status(500).json({ status: false, msg: err.message });
   }
 };
 
 exports.deleteBlogByQuery = async (req, res) => {
   try {
     if (Object.keys(req.query).length == 0) {
-      return res.status(400).send("You must choose one category");
+      return res
+        .status(400)
+        .json({ status: false, msg: "You must choose one category" });
     }
     const { authorId, category, tags, subCategory } = req.query;
     const deleteBlog = await BlogModel.findOneAndUpdate(
@@ -172,8 +213,16 @@ exports.deleteBlogByQuery = async (req, res) => {
       },
       { new: true }
     );
-    return res.status(204).send(deleteBlog);
+    if (!deleteBlog) {
+      return res
+        .status(404)
+        .json({
+          status: false,
+          msg: "Blog either does not exist or is deleted",
+        });
+    }
+    return res.status(204).json({ status: true, data: deleteBlog });
   } catch (err) {
-    return res.status(500).send(err.message);
+    return res.status(500).json({ status: false, msg: err.message });
   }
 };

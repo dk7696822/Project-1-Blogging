@@ -3,9 +3,9 @@ const jwt = require("jsonWebToken");
 exports.createAuthor = async (req, res) => {
   try {
     const author = await AuthorModel.create(req.body);
-    res.status(201).send(author);
+    res.status(201).json({ status: true, data: author });
   } catch (err) {
-    return res.status(500).send(err.message);
+    return res.status(400).json({ status: false, msg: err.message });
   }
 };
 
@@ -16,14 +16,16 @@ exports.loginAuthor = async (req, res) => {
       password: req.body.password,
     });
     if (!findAuthor) {
-      return res.status(400).send("Émail or Password is incorrect");
+      return res
+        .status(400)
+        .json({ status: false, msg: "Émail or Password is incorrect" });
     }
     const token = jwt.sign(
       { authorId: findAuthor._id },
       process.env.SECRET_KEY
     );
-    return res.status(200).send(token);
+    return res.status(200).json({ status: true, data: { token } });
   } catch (err) {
-    return res.status(400).send(err.message);
+    return res.status(500).json({ status: false, msg: err.message });
   }
 };
