@@ -33,7 +33,7 @@ exports.authorisation = async (req, res, next) => {
     if (!blog) {
       return res.status(404).json({ status: false, msg: "No such blog found" });
     }
-    if (req.authorId != blog.author_id) {
+    if (req.authorId != blog.authorId) {
       return res
         .status(403)
         .json({ status: false, msg: "You are not authorized" });

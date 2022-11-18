@@ -4,6 +4,9 @@ const { isValidObjectId } = require("mongoose");
 
 exports.createBlog = async (req, res) => {
   try {
+    if (req.body.isPublished == true) {
+      req.body.publishedAt = Date.now();
+    }
     if (req.authorId == req.body.authorId) {
       if (!isValidObjectId(req.body.authorId)) {
         return res
@@ -38,7 +41,7 @@ exports.getBlog = async (req, res) => {
       const listOfBlogs = await BlogModel.find({
         $and: [{ isDeleted: false }, { isPublished: true }],
       });
-      if (!listOfBlogs) {
+      if (listOfBlogs.length == 0) {
         return res
           .status(404)
           .json({ status: false, msg: "No such blog exist" });
@@ -54,7 +57,7 @@ exports.getBlog = async (req, res) => {
           },
         ],
       });
-      if (!blogs) {
+      if (blogs.length == 0) {
         return res
           .status(404)
           .json({ status: false, msg: "No such blog exist" });
@@ -186,16 +189,21 @@ exports.deleteBlogByQuery = async (req, res) => {
     const blog = await BlogModel.find({
       $and: [{ data }, { isDeleted: false }],
     });
-    if (!blog) {
+    if (blog.length == 0) {
       return res.status(404).json({ status: false, msg: "No such blog exist" });
     }
     for (let i = 0; i < blog.length; i++) {
       if (blog[i].authorId == req.authorId) {
-        let deletedBlog = await BlogModel.updateMany(
-          { data },
+        var deletedBlog = await BlogModel.updateMany(
+          data,
           { $set: { isDeleted: true, deletedAt: Date.now() } },
           { new: true }
         );
+        if (deletedBlog.matchedCount == 0) {
+          return res
+            .status(404)
+            .json({ status: false, msg: "No such blog exist" });
+        }
         return res.status(204).json({ status: true, data: deletedBlog });
       }
     }
