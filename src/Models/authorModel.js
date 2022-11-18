@@ -11,11 +11,11 @@ const authorSchema = new mongoose.Schema(
       },
     },
 
-    firstName: {
+    fname: {
       type: String,
       required: [true, "Please provide your First Name"],
     },
-    lastName: {
+    lname: {
       type: String,
       required: [true, "Please provide your Last Name"],
     },

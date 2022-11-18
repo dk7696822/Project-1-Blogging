@@ -10,7 +10,7 @@ router
   .route("/blogs")
   .post(Authenticate.authentication, Blogcontroller.createBlog)
   .get(Authenticate.authentication, Blogcontroller.getBlog)
-  .delete(Authenticate.authorisation, Blogcontroller.deleteBlogByQuery);
+  .delete(Authenticate.authentication, Blogcontroller.deleteBlogByQuery);
 
 router
   .route("/blogs/:blogId")

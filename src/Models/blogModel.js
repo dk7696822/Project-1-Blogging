@@ -18,12 +18,12 @@ const BlogSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please mention the category"],
   },
-  author_id: {
+  authorId: {
     type: ObjectId,
     ref: "authors",
     required: [true, "Please provide the author ID"],
   },
-  subCategory: {
+  subcategory: {
     type: [String],
   },
   isPublished: {

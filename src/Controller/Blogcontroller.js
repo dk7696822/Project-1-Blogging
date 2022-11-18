@@ -4,13 +4,13 @@ const { isValidObjectId } = require("mongoose");
 
 exports.createBlog = async (req, res) => {
   try {
-    if (req.authorId == req.body.author_id) {
-      if (!isValidObjectId(req.body.author_id)) {
+    if (req.authorId == req.body.authorId) {
+      if (!isValidObjectId(req.body.authorId)) {
         return res
           .status(400)
           .json({ status: false, message: "Author ID is not Valid" });
       }
-      const checkAuthor = await AuthorModel.findById(req.body.author_id);
+      const checkAuthor = await AuthorModel.findById(req.body.authorId);
       if (!checkAuthor) {
         return res
           .status(404)
@@ -78,12 +78,10 @@ exports.updateBlog = async (req, res) => {
     });
 
     if (!blog) {
-      return res
-        .status(404)
-        .json({
-          status: false,
-          msg: "Blog either does not exist or is deleted",
-        });
+      return res.status(404).json({
+        status: false,
+        msg: "Blog either does not exist or is deleted",
+      });
     }
     if (tags && subCategory) {
       if (tags.length == 0 || subCategory.length == 0) {
@@ -110,12 +108,10 @@ exports.updateBlog = async (req, res) => {
         { new: true }
       );
       if (!updatedBlog) {
-        return res
-          .status(404)
-          .json({
-            status: false,
-            msg: "Either the blog does not exist with this ID or is deleted",
-          });
+        return res.status(404).json({
+          status: false,
+          msg: "Either the blog does not exist with this ID or is deleted",
+        });
       }
       return res.status(200).json({ status: true, data: updatedBlog });
     } else {
@@ -135,12 +131,10 @@ exports.updateBlog = async (req, res) => {
         { new: true }
       );
       if (!updatedBlog) {
-        return res
-          .status(404)
-          .json({
-            status: false,
-            msg: "Either the blog does not exist with this ID or is deleted",
-          });
+        return res.status(404).json({
+          status: false,
+          msg: "Either the blog does not exist with this ID or is deleted",
+        });
       }
       return res.status(200).json({ status: true, data: updatedBlog });
     }
@@ -170,12 +164,10 @@ exports.deleteBlog = async (req, res) => {
       }
     );
     if (!deleteBlog) {
-      return res
-        .status(404)
-        .json({
-          status: false,
-          msg: "Blog either does not exist or is deleted",
-        });
+      return res.status(404).json({
+        status: false,
+        msg: "Blog either does not exist or is deleted",
+      });
     }
     return res.status(204).json({ status: true, data: deleteBlog });
   } catch (err) {
@@ -185,43 +177,29 @@ exports.deleteBlog = async (req, res) => {
 
 exports.deleteBlogByQuery = async (req, res) => {
   try {
+    let data = req.query;
     if (Object.keys(req.query).length == 0) {
       return res
         .status(400)
         .json({ status: false, msg: "You must choose one category" });
     }
-    const { authorId, category, tags, subCategory } = req.query;
-    const deleteBlog = await BlogModel.findOneAndUpdate(
-      {
-        $and: [
-          { isDeleted: false },
-          {
-            $or: [
-              { author_id: authorId },
-              { category },
-              { tags },
-              { subCategory },
-            ],
-          },
-        ],
-      },
-      {
-        $set: {
-          isDeleted: true,
-          deletedAt: Date.now(),
-        },
-      },
-      { new: true }
-    );
-    if (!deleteBlog) {
-      return res
-        .status(404)
-        .json({
-          status: false,
-          msg: "Blog either does not exist or is deleted",
-        });
+    const blog = await BlogModel.find({
+      $and: [{ data }, { isDeleted: false }],
+    });
+    if (!blog) {
+      return res.status(404).json({ status: false, msg: "No such blog exist" });
     }
-    return res.status(204).json({ status: true, data: deleteBlog });
+    for (let i = 0; i < blog.length; i++) {
+      if (blog[i].authorId == req.authorId) {
+        let deletedBlog = await BlogModel.updateMany(
+          { data },
+          { $set: { isDeleted: true, deletedAt: Date.now() } },
+          { new: true }
+        );
+        return res.status(204).json({ status: true, data: deletedBlog });
+      }
+    }
+    return res.status(403).json({ status: false, msg: "Authorization failed" });
   } catch (err) {
     return res.status(500).json({ status: false, msg: err.message });
   }
