@@ -24,7 +24,7 @@ exports.loginAuthor = async (req, res) => {
       { authorId: findAuthor._id },
       process.env.SECRET_KEY
     );
-    return res.status(200).json({ status: true, data: { token } });
+    return res.status(200).send({ status: true, data: { token } });
   } catch (err) {
     return res.status(500).json({ status: false, msg: err.message });
   }

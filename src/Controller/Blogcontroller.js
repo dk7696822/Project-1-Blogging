@@ -139,7 +139,9 @@ exports.updateBlog = async (req, res) => {
           msg: "Either the blog does not exist with this ID or is deleted",
         });
       }
-      return res.status(200).json({ status: true, data: updatedBlog });
+      return res
+        .status(200)
+        .send({ status: true, message: "successfull", data: updatedBlog });
     }
   } catch (err) {
     res.status(500).json({ status: false, msg: err.message });
@@ -172,7 +174,7 @@ exports.deleteBlog = async (req, res) => {
         msg: "Blog either does not exist or is deleted",
       });
     }
-    return res.status(204).json({ status: true, data: deleteBlog });
+    return res.status(200).json({ status: true });
   } catch (err) {
     return res.status(500).json({ status: false, msg: err.message });
   }
@@ -204,7 +206,7 @@ exports.deleteBlogByQuery = async (req, res) => {
             .status(404)
             .json({ status: false, msg: "No such blog exist" });
         }
-        return res.status(204).json({ status: true, data: deletedBlog });
+        return res.status(200).json({ status: true });
       }
     }
     return res.status(403).json({ status: false, msg: "Authorization failed" });
