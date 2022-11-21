@@ -189,7 +189,7 @@ exports.deleteBlogByQuery = async (req, res) => {
         .json({ status: false, msg: "You must choose one category" });
     }
     const blog = await BlogModel.find({
-      $and: [{ data }, { isDeleted: false }],
+      $and: [data, { isDeleted: false }],
     });
     if (blog.length == 0) {
       return res.status(404).json({ status: false, msg: "No such blog exist" });
